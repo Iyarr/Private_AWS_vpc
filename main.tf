@@ -71,7 +71,7 @@ resource "aws_security_group" "default" {
 }
 
 data "template_file" "init" {
-  template = "${file("user_data.sh")}"
+  template = file(".sh")
   vars = {
     world_name = var.world_name
   }
