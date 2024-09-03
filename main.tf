@@ -70,6 +70,13 @@ resource "aws_security_group" "default" {
   }
 }
 
+data "template_file" "init" {
+  template = "${file("user_data.sh")}"
+  vars = {
+    world_name = var.world_name
+  }
+}
+
 resource "aws_instance" "server" {
   ami           = data.aws_ami.amzlinux2.id
   instance_type = "t2.micro"
@@ -78,5 +85,5 @@ resource "aws_instance" "server" {
   associate_public_ip_address = true
   security_groups          = [aws_security_group.default.id]
 
-  user_data = file("user_data.sh")
+  user_data = data.template_file.init.rendered
 }
