@@ -53,3 +53,7 @@ vCPU 2, メモリ 2GB
 
 vCPU 2, メモリ 4GB
 1 時間で USD 0.0544
+
+## ログ
+
+コンテナ上の CloudWatch Logs に出力する

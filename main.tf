@@ -80,4 +80,5 @@ resource "aws_instance" "server" {
   security_groups          = [aws_security_group.default.id]
 
   user_data = data.template_file.init.rendered
+  user_data_replace_on_change = true
 }
