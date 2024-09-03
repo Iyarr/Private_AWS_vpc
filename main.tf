@@ -26,12 +26,6 @@ resource "aws_route_table" "igw_route_table" {
   }
 }
 
-resource "aws_route" "public" {
-  route_table_id         = aws_route_table.igw_route_table.id
-  gateway_id             = aws_internet_gateway.default.id
-  destination_cidr_block = "0.0.0.0/0"
-}
-
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.default.id
   route_table_id = aws_route_table.igw_route_table.id
