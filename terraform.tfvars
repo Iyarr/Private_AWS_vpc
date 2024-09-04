@@ -1,0 +1,1 @@
+prefix="minecraft_server"

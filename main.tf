@@ -36,13 +36,6 @@ resource "aws_security_group" "default" {
   vpc_id = aws_vpc.default.id
 
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
     from_port   = 19132
     to_port     = 19132
     protocol    = "udp"
@@ -79,6 +72,65 @@ resource "aws_instance" "server" {
   associate_public_ip_address = true
   security_groups          = [aws_security_group.default.id]
 
+  iam_instance_profile = aws_iam_instance_profile.default.name
+
   user_data = data.template_file.init.rendered
   user_data_replace_on_change = true
+}
+
+resource "aws_iam_instance_profile" "default" {
+  name = "${var.prefix}_profile"
+  role = aws_iam_role.default.name
+}
+
+data "aws_iam_policy_document" "assumerole_ec2" {
+
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "logs" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:GetLogEvents",
+      "logs:FilterLogEvents",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents",
+    ]
+
+    resources = [aws_cloudwatch_log_group.minecraft.arn]
+  }
+}
+
+resource "aws_iam_policy" "logs" {
+  name = "${var.prefix}_logs"
+  policy = data.aws_iam_policy_document.logs.json
+}
+
+resource "aws_iam_role" "default" {
+  name               = "ec2_instance_role"
+  path               = "/${var.prefix}"
+  assume_role_policy = data.aws_iam_policy_document.assumerole_ec2.json
+}
+
+resource "aws_iam_role_policy_attachment" "logs" {
+  role       = aws_iam_role.default.name
+  policy_arn = aws_iam_policy.logs.arn
+}
+
+resource "aws_cloudwatch_log_group" "minecraft" {
+  name = "/${var.prefix}/minecraft/${var.world_name}"
+
+  retention_in_days = 7
 }

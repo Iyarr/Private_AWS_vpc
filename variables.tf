@@ -17,3 +17,7 @@ variable "world_name" {
   type = string
   sensitive = true
 }
+
+variable "prefix" {
+  type = string
+}
