@@ -1,9 +1,25 @@
 #!/bin/bash
 
 yum install -y unzip amazon-cloudwatch-agent
-script /var/log/test.log
+script $log_file_path
 cd /opt/aws/amazon-cloudwatch-agent
-echo "$agent_json" > ./etc/amazon-cloudwatch-agent.json
+cat <<EOF
+{
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "$log_file_path",
+            "log_group_name": "$log_group_name",
+            "log_stream_name": "$log_stream_name"
+          }
+        ]
+      }
+    }
+  }
+}
+EOF > ./etc/amazon-cloudwatch-agent.json
 ./bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:./etc/amazon-cloudwatch-agent.json -s
 su - ec2-user
 cd ~

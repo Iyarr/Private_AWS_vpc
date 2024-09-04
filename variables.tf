@@ -21,3 +21,7 @@ variable "world_name" {
 variable "prefix" {
   type = string
 }
+
+variable "log_file_path" {
+  type      = string
+}
