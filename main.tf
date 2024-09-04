@@ -68,7 +68,7 @@ data "template_file" "init" {
 }
 
 resource "aws_instance" "server" {
-  ami           = data.aws_ami.amzlinux2.id
+  ami           = data.aws_ami.amzlinux2023.id
   instance_type = "t2.micro"
 
   subnet_id                   = aws_subnet.default.id

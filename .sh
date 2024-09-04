@@ -1,6 +1,6 @@
 #!/bin/bash
 
-yum install -y unzip amazon-cloudwatch-agent
+dnf install -y unzip amazon-cloudwatch-agent
 script $log_file_path
 cd /opt/aws/amazon-cloudwatch-agent
 cat <<EOF

@@ -1,4 +1,4 @@
-data "aws_ami" "amzlinux2" {
+data "aws_ami" "amzlinux2023" {
   most_recent = true
   owners      = ["amazon"]
 
@@ -14,7 +14,7 @@ data "aws_ami" "amzlinux2" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*"]
+    values = ["al2023-ami-*"]
   }
 
   filter {
