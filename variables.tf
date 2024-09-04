@@ -18,6 +18,10 @@ variable "world_name" {
   sensitive = true
 }
 
+variable "log_file_path" {
+  type = string
+}
+
 variable "prefix" {
   type = string
 }

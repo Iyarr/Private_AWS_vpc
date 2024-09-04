@@ -58,7 +58,7 @@ resource "aws_security_group" "default" {
 }
 
 data "template_file" "init" {
-  template = file(".sh")
+  template = "${file(".sh")}"
   vars = {
     world_name = var.world_name
     agent_json = jsonencode({
@@ -67,7 +67,7 @@ data "template_file" "init" {
           files = {
             collect_list = [
               {
-                file_path       = "/var/log/**.log",
+                file_path       = "${var.log_file_path}",
                 log_group_name  = "${aws_cloudwatch_log_group.minecraft.name}",
                 log_stream_name = "${aws_cloudwatch_log_stream.default.name}",
               }
