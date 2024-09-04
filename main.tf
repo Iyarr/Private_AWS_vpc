@@ -32,7 +32,7 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_security_group" "default" {
-  name        = "MinecraftServer_SG"
+  name   = "MinecraftServer_SG"
   vpc_id = aws_vpc.default.id
 
   ingress {
@@ -41,14 +41,14 @@ resource "aws_security_group" "default" {
     protocol    = "udp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   egress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   egress {
     from_port   = 443
     to_port     = 443
@@ -61,6 +61,21 @@ data "template_file" "init" {
   template = file(".sh")
   vars = {
     world_name = var.world_name
+    agent_json = jsonencode({
+      logs = {
+        logs_collected = {
+          files = {
+            collect_list = [
+              {
+                file_path       = "/var/log/**.log",
+                log_group_name  = "${aws_cloudwatch_log_group.minecraft.name}",
+                log_stream_name = "${aws_cloudwatch_log_stream.default.name}",
+              }
+            ]
+          }
+        }
+      }
+    })
   }
 }
 
@@ -68,13 +83,13 @@ resource "aws_instance" "server" {
   ami           = data.aws_ami.amzlinux2.id
   instance_type = "t2.micro"
 
-  subnet_id            = aws_subnet.default.id
+  subnet_id                   = aws_subnet.default.id
   associate_public_ip_address = true
-  security_groups          = [aws_security_group.default.id]
+  security_groups             = [aws_security_group.default.id]
 
   iam_instance_profile = aws_iam_instance_profile.default.name
 
-  user_data = data.template_file.init.rendered
+  user_data                   = data.template_file.init.rendered
   user_data_replace_on_change = true
 }
 
@@ -95,29 +110,6 @@ data "aws_iam_policy_document" "assumerole_ec2" {
   }
 }
 
-data "aws_iam_policy_document" "logs" {
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:GetLogEvents",
-      "logs:FilterLogEvents",
-      "logs:DescribeLogGroups",
-      "logs:DescribeLogStreams",
-      "logs:PutLogEvents",
-    ]
-
-    resources = [aws_cloudwatch_log_group.minecraft.arn]
-  }
-}
-
-resource "aws_iam_policy" "logs" {
-  name = "${var.prefix}_logs"
-  policy = data.aws_iam_policy_document.logs.json
-}
-
 resource "aws_iam_role" "default" {
   name               = "ec2_instance_role"
   path               = "/${var.prefix}"
@@ -126,11 +118,16 @@ resource "aws_iam_role" "default" {
 
 resource "aws_iam_role_policy_attachment" "logs" {
   role       = aws_iam_role.default.name
-  policy_arn = aws_iam_policy.logs.arn
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
 resource "aws_cloudwatch_log_group" "minecraft" {
-  name = "/${var.prefix}/minecraft/${var.world_name}"
+  name = "/${var.prefix}/minecraft"
 
   retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_stream" "default" {
+  name           = var.world_name
+  log_group_name = aws_cloudwatch_log_group.minecraft.name
 }

@@ -1,1 +1,1 @@
-prefix="minecraft_server"
+prefix = "minecraft_server"
