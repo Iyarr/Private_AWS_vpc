@@ -112,7 +112,7 @@ data "aws_iam_policy_document" "assumerole_ec2" {
 
 resource "aws_iam_role" "default" {
   name               = "ec2_instance_role"
-  path               = "/${var.prefix}"
+  path               = "/${var.prefix}/"
   assume_role_policy = data.aws_iam_policy_document.assumerole_ec2.json
 }
 
